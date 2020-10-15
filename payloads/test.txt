@@ -1,0 +1,12 @@
+/robots.txt
+/search/about
+/search/static
+/groups
+/mashitr
+/m/finance
+admin
+user
+test
+psw
+password
+brnyr
