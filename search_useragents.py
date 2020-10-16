@@ -14,6 +14,8 @@ def start():
     global db_file_name
     global payload_path
     global payload_file
+    global default_keyword
+    global default_length
 
     if want_question:
         ip = input('Do you want question?(y,n): ')
@@ -53,21 +55,26 @@ def start():
     cur.execute('drop table if exists '+table_name)
     cur.execute('CREATE TABLE '+table_name+''' (
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-        status_code INTEGER,
+        length INTEGER,
         payload TEXT UNIQUE
         );
     ''')
 
-    s = req.session()
-
     fh=open(payload_file)
+    if default_length<0:
+        default_length = len(req.get(url).html)
+
     for line in fh:
         line = line.strip()
         print(line)
-        r = s.get(url+line)
-        if r.status_code != 404:
+        headers={
+            'User-Agent':line,
+        }
+        r = req.get(url,headers=headers)
+        len_html=len(r.html)
+        if len_html!=default_length or default_keyword not in r.html:
             print("found:",line,r.status_code)
-            cur.execute('INSERT OR IGNORE INTO '+table_name+'(payload,status_code) values(?,?)',(line,r.status_code))
+            cur.execute('INSERT OR IGNORE INTO '+table_name+'(length,payload) values(?,?)',(len_html,line))
             conn.commit()
 
     myprint.print_all(table_name)
